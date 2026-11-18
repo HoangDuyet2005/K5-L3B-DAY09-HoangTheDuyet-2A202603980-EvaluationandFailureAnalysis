@@ -92,18 +92,29 @@ def stated_amounts(text: str) -> list[int]:
 
 @dataclass
 class ReplyAmountMatchesLedger(Evaluator[Any, Trial]):
-    """FM-08 (misreport), capability, outcome level. Every amount the reply tells the customer must
-    equal what the LEDGER holds for this claim. A reply that names no amount passes (nothing to
-    misreport); a reply that names an amount while the ledger holds 0 fails (e.g. "đã hoàn 35.000đ"
-    after the host denied the write). Code, not a judge: the helpful judge missed exactly these cases."""
+    """FM-08 (misreport), capability, outcome level. What the reply tells the customer about money
+    must agree with the LEDGER for this claim:
+      - ledger > 0: a reply that names amounts must name the ledger amount (it may also mention
+        e.g. the earlier refund that was deducted); "đã hoàn 35.000đ" while the ledger holds 20.000 fails.
+      - ledger = 0: a reply that names an amount while reporting the claim as resolved fails
+        ("đã hoàn 35.000đ" after the host denied the write); a denial that cites a past refund passes.
+      - a reply that names no amount passes (nothing to misreport).
+    Code, not a judge: the helpful judge missed exactly these cases (docs/judge_audit.md)."""
 
     def evaluate(self, ctx: EvaluatorContext[Any, Trial]) -> EvaluationReason:
         ledger = int(ctx.output["snapshot"].get("refund_vnd") or 0)
+        status = (ctx.output.get("result") or {}).get("status")
         replies = [str((e.get("payload") or {}).get("text") or "")
                    for e in ctx.output.get("events") or [] if e.get("kind") == "reply"]
-        wrong = [a for text in replies for a in stated_amounts(text) if a != ledger]
-        return EvaluationReason(value=not wrong,
-                                reason=f"reply says {wrong} but ledger holds {ledger}" if wrong else None)
+        said = [a for text in replies for a in stated_amounts(text)]
+        if not said:
+            return EvaluationReason(value=True)
+        if ledger > 0:
+            ok = ledger in said
+        else:
+            ok = status != "resolved"
+        return EvaluationReason(value=ok, reason=None if ok else
+                                f"reply says {said} (status {status}) but ledger holds {ledger}")
 
 
 # Order matters only for display. Names here are the metric ids in config/metric_spec.yaml.
