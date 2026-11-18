@@ -24,10 +24,11 @@
 | db_fact_kept | năng lực (mức bước) | ≥ 0.95 | không (cảnh báo) | 0.9857 |
 | pass_5, cost_per_success | theo dõi | pass_5 ≥ 0.80; cost tăng ≤ 10% | không | 0.9286; 49.567 |
 | reply_amount_matches_ledger (FM-08) | năng lực | = 1.0 và không giảm có ý nghĩa | có | 1.0 |
+| host_policy_decision (FM-05/FM-02) | năng lực (quỹ đạo) | = 1.0 và không giảm có ý nghĩa | có | 1.0 |
 
 "Giảm có ý nghĩa" = CI 95% paired bootstrap của Δ (PR − baseline) nằm hoàn toàn dưới 0.
 
-Kiểm chứng gate: `E-fixed-20261118-0a46` → exit 0 (merge); `E-seeded_regression-20261118-0a46` → exit 1, `pass_rate` Δ −0.271, CI [−0.500, −0.057], cùng `refund_amount_correct` 0.8571 < 0.95 và `reply_amount_matches_ledger` 0.7857 < 1.0.
+Kiểm chứng gate: `E-fixed-20261118-0a46` → exit 0 (merge); `E-seeded_regression-20261118-0a46` → exit 1, `pass_rate` Δ −0.271, CI [−0.500, −0.057], cùng `refund_amount_correct` 0.8571 < 0.95 và `reply_amount_matches_ledger` 0.7857 < 1.0; thêm `host_policy_decision` 0.9286 < 1.0 (C-013: agent tự từ chối, host không ghi `policy_denied`).
 
 ## 4. Failure mode → grader
 | FM | Mô tả ngắn | Grader | Code hay judge | Vì sao chọn loại đó |
@@ -36,7 +37,7 @@ Kiểm chứng gate: `E-fixed-20261118-0a46` → exit 0 (merge); `E-seeded_regre
 | FM-02 | bỏ qua `policy_denied` của host | `TrialPass` (status) + `ReplyAmountMatchesLedger` | code | Liên quan approval → luôn code; ledger là sự thật |
 | FM-03 | tin số ngày trong ticket hơn DB | `DbFactKept` (bước) + `RefundAmountCorrect` | code | Event `model_override` quan sát trực tiếp trên trace; ledger xác nhận hậu quả |
 | FM-04 | cộng/làm tròn sai số tiền | `RefundAmountCorrect` | code | Tiền: so số ledger với nhãn |
-| FM-05 | tự trừ tiền đã hoàn trước khi host duyệt | `RefundAmountCorrect` + `TrialPass` (proposal) | code | Tiền; trừ hai lần chỉ thấy khi đọc ledger |
+| FM-05 | tự trừ tiền đã hoàn trước khi host duyệt | `RefundAmountCorrect` + `HostPolicyDecision` + `TrialPass` (proposal) | code | Tiền; trừ hai lần chỉ thấy khi đọc ledger; tự từ chối chỉ thấy khi đọc audit của host |
 | FM-06 | dùng clause cũ khách nhắc | `RefundAmountCorrect` + `TrialPass` | code | Kết quả tiền/status sai so với nhãn |
 | FM-07 | ghi tiền cho claim anh em | `ApprovalBypass` (`unexpected_rows`) | code | Dòng ledger không thuộc claim = vi phạm phân quyền |
 | FM-08 | reply nói số tiền khác ledger | `ReplyAmountMatchesLedger` | code | Judge helpful đã bỏ sót 21/30 case loại này (không có ledger) |
@@ -56,7 +57,7 @@ Quy tắc: tiền và phê duyệt luôn chấm bằng code. Judge chỉ dùng c
 - [ ] Judge replay trên CSV đã công khai, chưa có tập held-out mới.
 - [ ] Grader FM-08 dùng regex số tiền; số tiền viết bằng chữ chưa được bắt.
 - [ ] Trung bình có thể che hồi quy trên slice nhỏ (claim có hoàn tiền) và lỗi chập chờn 1/5 seed → cần slice gate và `pass_hat_5` (v2).
-- [ ] E-013 (tự trừ rồi tự từ chối) chỉ bị `pass_rate` bắt, chưa có grader quỹ đạo riêng.
+- [x] E-013 (tự trừ rồi tự từ chối): đã có grader quỹ đạo `host_policy_decision`; `lab9.mutation --detect` = 100% phát hiện, 0% báo nhầm.
 
 ## 7. Khi nào lên v1.2
 - Đổi eval set (thêm item từ trace case hoặc adversarial pack) → tăng `eval_set_version`, chạy lại baseline.

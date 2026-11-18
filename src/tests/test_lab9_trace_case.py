@@ -43,3 +43,15 @@ def test_trace_case_c008_misreport_is_caught_only_by_fm08_metric():
     assert g["reply_amount_matches_ledger"] is False
     _, fixed = _grade("fixed", "C-008", 11)
     assert fixed["reply_amount_matches_ledger"] is True
+
+
+def test_trace_case_c013_agent_denies_without_host_is_caught():
+    """FM-05: seeded_regression C-013@11 event #5 `proposal 0` -- the agent subtracts the prior refund
+    and denies on its own; the host never records policy_denied. Ledger (0) and reply (no amount) look
+    fine, so only host_policy_decision (besides pass_rate) catches it."""
+    trial, g = _grade("seeded_regression", "C-013", 11)
+    assert trial["snapshot"]["refund_vnd"] == 0 and trial["snapshot"]["policy_denied"] is False
+    assert g["refund_amount_correct"] is True and g["reply_amount_matches_ledger"] is True
+    assert g["host_policy_decision"] is False and g["pass_rate"] is False
+    _, fixed = _grade("fixed", "C-013", 11)
+    assert fixed["host_policy_decision"] is True and fixed["pass_rate"] is True

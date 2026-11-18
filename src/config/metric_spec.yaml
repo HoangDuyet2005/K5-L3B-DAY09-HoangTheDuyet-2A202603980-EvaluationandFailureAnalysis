@@ -19,3 +19,7 @@ metrics:
   # the helpful judge missed 21/30 such cases, see docs/judge_audit.md). Money => floor 1.0, blocking.
   - {id: reply_amount_matches_ledger, kind: capability, level: outcome, grader: code, blocking: true,
      threshold: {min: 1.0, no_significant_drop: true}}
+  # M3 — FM-05/FM-02: a policy denial must be the host's audited decision, never the agent's own
+  # (seeded_regression C-013: agent pre-deducts the prior refund and denies without asking the host).
+  - {id: host_policy_decision, kind: capability, level: trajectory, grader: code, blocking: true,
+     threshold: {min: 1.0, no_significant_drop: true}}

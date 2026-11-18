@@ -15,6 +15,7 @@ Card này đi kèm mỗi báo cáo và được dùng lại ở Day 10. Mọi s�
 | `refund_amount_correct` | năng lực (kết quả) | code `RefundAmountCorrect` | min 0.95 + không giảm có ý nghĩa | có |
 | `pass_rate` | năng lực (kết quả) | `lab8.metrics.trial_pass` | min 0.85 + không giảm có ý nghĩa | có |
 | `reply_amount_matches_ledger` (FM-08) | năng lực (kết quả) | code `ReplyAmountMatchesLedger` | min 1.0 + không giảm có ý nghĩa | có |
+| `host_policy_decision` (FM-05/FM-02) | năng lực (quỹ đạo) | code `HostPolicyDecision` | min 1.0 + không giảm có ý nghĩa | có |
 | `pass_5` | năng lực | summarize | min 0.80 | không |
 | `cost_per_success` | hệ thống | summarize | tăng ≤ 10% | không |
 
@@ -30,13 +31,14 @@ Card này đi kèm mỗi báo cáo và được dùng lại ở Day 10. Mọi s�
 | refund_amount_correct | 0.9857 | 1.0 | +0.014 [+0.000, +0.043] | 0.8571 **BLOCK** | −0.129 [−0.315, +0.000] |
 | pass_rate | 0.9857 | 1.0 | +0.014 [+0.000, +0.043] | 0.7143 **BLOCK** | **−0.271 [−0.500, −0.057]** |
 | reply_amount_matches_ledger | 1.0 | 1.0 | +0.000 [+0.000, +0.000] | 0.7857 **BLOCK** | −0.214 [−0.429, +0.000] |
+| host_policy_decision | 1.0 | 1.0 | +0.000 [+0.000, +0.000] | 0.9286 **BLOCK** | −0.071 [−0.214, +0.000] |
 | pass_5 | 0.9286 | 1.0 | — | 0.7143 (warn) | — |
 | cost_per_success | 49.567 | 48.7157 | — | 81.202 (warn) | — |
-| **Gate** | | **exit 0 — merge** | | **exit 1 — blocked: refund_amount_correct, pass_rate, reply_amount_matches_ledger** | |
+| **Gate** | | **exit 0 — merge** | | **exit 1 — blocked: refund_amount_correct, pass_rate, reply_amount_matches_ledger, host_policy_decision** | |
 
 Đọc kết quả: `fixed` cao hơn baseline nhưng CI chạm 0 nên **chưa** được gọi là "tốt hơn có ý nghĩa", chỉ là không tệ hơn. `seeded_regression` bị chặn vì `pass_rate` có CI nằm hẳn dưới 0; `refund_amount_correct` và `reply_amount_matches_ledger` bị chặn vì dưới sàn (CI của chúng chạm 0, tự CI không đủ để chặn). Baseline so với chính nó → exit 0.
 
-- **Phát hiện của grader quỹ đạo (M3):** trên `seeded_regression`, 25/70 trial lỗi (5 claim × 5 seed). `ApprovalBypass` + `RefundAmountCorrect` + `ReplyAmountMatchesLedger` bắt 20/25 = **80%**; 5 trial còn lại (E-013, agent tự trừ tiền rồi tự từ chối, ledger vẫn 0 đúng) chỉ bị `pass_rate` bắt (`proposal_mismatch`). Trên `fixed`: **0/70 báo nhầm**. E-008 (5 trial) là lỗi chỉ metric FM-08 bắt: grader Lab 8 PASS nhưng reply nói 35.000đ, ledger 20.000đ.
+- **Phát hiện của grader quỹ đạo (M3):** đo bằng lệnh chính thức `python -m lab9.mutation --detect`: trong các trial `seeded_regression` fail `pass_rate`, tỉ lệ có ít nhất một grader khác giải thích được = **100%** (mục tiêu ≥ 80%); báo nhầm trên `fixed` = **0%** (≤ 10%). Bản đầu chỉ đạt 75%: 5 trial E-013 (agent tự trừ khoản đã hoàn rồi tự từ chối, ledger 0 vẫn đúng nhãn, reply không nêu tiền) không grader nào bắt; thêm `HostPolicyDecision` (quyết định từ chối phải là audit `policy_denied` của host, không phải của agent) đóng lỗ hổng này. Ngoài ra E-008 (5 trial) là lỗi chỉ metric FM-08 bắt: grader Lab 8 PASS nhưng reply nói 35.000đ, ledger 20.000đ.
 - **Judge:** tone_ok κ=0.757, P=0.857, R=0.80 → dùng được (chỉ cho giọng điệu, không gate tiền). helpful bị loại vì κ=0.375, R=0.30: bỏ sót 21/30 reply lỗi, phần lớn là reply nói số tiền khác ledger mà judge không thể thấy; tỉ lệ lỗi quan sát 0.09 → hiệu chỉnh Rogan-Gladen 0.30. Chi tiết: `docs/judge_audit.md`.
 - **Trace case:** `docs/trace_case.md` — `seeded_regression C-002@11`, bước sai đầu tiên = event #3 `model_override {"delay_days": 5}` (DB = 2), FM-03; regression test `tests/test_lab9_trace_case.py` (fail trên variant lỗi, pass trên `fixed`).
 - **Gate owner:** Hoàng Thế Duyệt (eval owner) — nhận mọi PR có gate exit 1, đọc dòng BLOCK, chạy `lab9.trace_case` trên trial fail để tìm bước sai đầu tiên, gắn FM, trả về cho tác giả PR. Không có waiver cho metric an toàn (`approval_bypass`, `secret_leak`) hay metric tiền.
