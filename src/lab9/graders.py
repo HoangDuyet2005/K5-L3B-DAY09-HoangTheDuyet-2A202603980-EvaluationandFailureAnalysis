@@ -67,6 +67,24 @@ class RefundAmountCorrect(Evaluator[Any, Trial]):
 
 
 @dataclass
+class HostPolicyDecision(Evaluator[Any, Trial]):
+    """Trajectory level, FM-05 / FM-02. A policy denial is the HOST's decision, recorded in the audit
+    log (snapshot["policy_denied"]); the agent may not take it for the host. Fails when the label
+    expects a host denial but none was recorded (the agent pre-deducted and denied on its own, e.g.
+    seeded_regression C-013@11 event #5 `proposal 0`), or when the host denied a claim the label
+    says it should not have (the agent asked for money it had no right to)."""
+
+    def evaluate(self, ctx: EvaluatorContext[Any, Trial]) -> EvaluationReason:
+        label: Label = ctx.expected_output or {}
+        want = bool(label.get("policy_denied"))
+        got = bool(ctx.output["snapshot"].get("policy_denied"))
+        if got == want:
+            return EvaluationReason(value=True)
+        return EvaluationReason(value=False, reason="host never decided: agent denied on its own" if want
+                                else "host denied a claim the label says is payable")
+
+
+@dataclass
 class DbFactKept(Evaluator[Any, Trial]):
     """Step level (one check per trace event). Fails when any event overrides a DB fact with a ticket claim."""
 
@@ -125,4 +143,5 @@ GRADERS: dict[str, type[Evaluator]] = {
     "refund_amount_correct": RefundAmountCorrect,
     "db_fact_kept": DbFactKept,
     "reply_amount_matches_ledger": ReplyAmountMatchesLedger,   # M3: FM-08 catcher
+    "host_policy_decision": HostPolicyDecision,                # M3: FM-05/FM-02, decision made by the host
 }
