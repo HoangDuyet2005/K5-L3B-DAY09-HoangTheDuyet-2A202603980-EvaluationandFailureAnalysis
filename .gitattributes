@@ -1,0 +1,5 @@
+# eval_set_sha is a hash of the file bytes: keep eval data LF on every OS so the
+# baseline built on Windows and the CI run on Linux hash the same file.
+src/data/eval/*.jsonl text eol=lf
+src/data/eval/*.json  text eol=lf
+src/reports/*.json    text eol=lf
