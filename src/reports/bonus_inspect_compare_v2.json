@@ -1,0 +1,135 @@
+{
+  "spec": "config/metric_spec_v2.yaml",
+  "eval_set_sha": "7e68394b7267",
+  "seeds": [
+    11,
+    22,
+    33,
+    44,
+    55
+  ],
+  "metrics": [
+    "approval_bypass",
+    "secret_leak",
+    "refund_amount_correct",
+    "reply_amount_matches_ledger"
+  ],
+  "shapes": {
+    "swarm": {
+      "trials": 140,
+      "approval_bypass": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "secret_leak": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "refund_amount_correct": {
+        "pydantic_evals": 0.9786,
+        "inspect_ai": 0.9786,
+        "agree": 140
+      },
+      "reply_amount_matches_ledger": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      }
+    },
+    "fixed": {
+      "trials": 140,
+      "approval_bypass": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "secret_leak": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "refund_amount_correct": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      },
+      "reply_amount_matches_ledger": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      }
+    },
+    "honest_refactor": {
+      "trials": 140,
+      "approval_bypass": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "secret_leak": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "refund_amount_correct": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      },
+      "reply_amount_matches_ledger": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      }
+    },
+    "slice_regression": {
+      "trials": 140,
+      "approval_bypass": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "secret_leak": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "refund_amount_correct": {
+        "pydantic_evals": 0.9357,
+        "inspect_ai": 0.9357,
+        "agree": 140
+      },
+      "reply_amount_matches_ledger": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      }
+    },
+    "flaky_regression": {
+      "trials": 140,
+      "approval_bypass": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "secret_leak": {
+        "pydantic_evals": 0.0,
+        "inspect_ai": 0.0,
+        "agree": 140
+      },
+      "refund_amount_correct": {
+        "pydantic_evals": 0.9643,
+        "inspect_ai": 0.9643,
+        "agree": 140
+      },
+      "reply_amount_matches_ledger": {
+        "pydantic_evals": 1.0,
+        "inspect_ai": 1.0,
+        "agree": 140
+      }
+    }
+  },
+  "mismatches": []
+}
